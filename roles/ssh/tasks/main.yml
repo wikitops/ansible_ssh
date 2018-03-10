@@ -1,0 +1,88 @@
+---
+
+- name: Update ssh server
+  apt:
+    name: openssh-server
+    state: present
+    update_cache: yes
+
+- name: Remove component of welcome message
+  file:
+    state: absent
+    path: "{{ item }}"
+  with_items:
+    - "/etc/update-motd.d/10-help-text"
+    - "/etc/update-motd.d/51-cloudguest"
+
+- name: Deploy component of welcome message
+  template:
+    src: "etc/update-motd.d/10-host-info.j2"
+    dest: "/etc/update-motd.d/10-host-info"
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Create groups
+  group:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ admin_groups }}"
+
+- name: Create users
+  user:
+    name: "{{ item.name }}"
+    shell: "{{ item.shell }}"
+    password: "{{ item.password }}"
+    groups: "{{ item.groups }}"
+    createhome: "{{ item.createhome }}"
+    state: present
+  with_items:
+    - "{{ admin_users }}"
+
+- name: Deploy default bashrc
+  template:
+    src: "home/bashrc.j2"
+    dest: "/home/{{ item.name }}/.bashrc"
+    owner: "{{ item.name }}"
+    group: "{{ item.name }}"
+    mode: 0600
+  with_items:
+    - "{{ admin_users }}"
+
+- name: Deploy default root bashrc
+  template:
+    src: "home/bashrc.j2"
+    dest: "/root/.bashrc"
+    owner: "root"
+    group: "root"
+    mode: 0600
+
+- name: Deploy the configuration file
+  template:
+    src: "etc/ssh/sshd_config.j2"
+    dest: "/etc/ssh/sshd_config"
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - Reload ssh
+
+- name: Make sure all handlers run
+  meta: flush_handlers
+
+- name: Add users SSH keys
+  authorized_key:
+    user: "{{ item.name }}"
+    key: "{{ lookup('file', '{{ item.name }}/public_key/id_rsa.pub' ) }}"
+    exclusive: yes
+    state: present
+  with_items:
+    - "{{ admin_users }}"
+
+- name: Copy sudoers configuration file
+  template:
+    src: "etc/sudoers.j2"
+    dest: "/etc/sudoers"
+    owner: root
+    group: root
+    mode: 0550

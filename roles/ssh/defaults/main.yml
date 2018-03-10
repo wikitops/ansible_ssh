@@ -1,0 +1,20 @@
+---
+
+admin_groups:
+  - ops
+
+admin_users:
+  - name: foo
+    password: $6$RryXF3NCbrIwYFU$Rc4d/vXpvHIXPDffFk7HhAibhX/RHdyEH5rHd3vZNmh15152rsbZY34G4U162TyDC0KMX9ZjmtQzDNbtXJccg.
+    shell: /bin/bash
+    groups:
+      - ops
+      - admin
+    createhome: yes
+  - name: bar
+    password: $6$r3cLXqW7$NQDL1pOVLrr5/yl.BrBnGeCkzTe4PfpRoZGKRimaTnQTD6P5.TA4.N6vtGMvECwyEvZee5alTQgAtGyXqhIAQ.
+    shell: /bin/bash
+    groups:
+      - ops
+      - admin
+    createhome: yes

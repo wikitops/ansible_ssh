@@ -1,0 +1,7 @@
+#!/bin/sh
+# {{ ansible_managed}}
+
+echo ""
+echo "Hostname: \033[1;32m$(hostname -f | sed -r 's/\.vty\.int//')\033[0m"
+echo "Environment: \033[1;32m{{ ssh_environment }}\033[0m"
+echo "Provider: \033[1;32m{{ ssh_provider }}\033[0m"
