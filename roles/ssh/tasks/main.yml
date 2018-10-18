@@ -1,12 +1,11 @@
 ---
 
-- name: Update ssh server
-  apt:
+- name: SSH | Update ssh server
+  package:
     name: openssh-server
     state: present
-    update_cache: yes
 
-- name: Remove component of welcome message
+- name: SSH | Remove component of welcome message
   file:
     state: absent
     path: "{{ item }}"
@@ -14,7 +13,7 @@
     - "/etc/update-motd.d/10-help-text"
     - "/etc/update-motd.d/51-cloudguest"
 
-- name: Deploy component of welcome message
+- name: SSH | Deploy component of welcome message
   template:
     src: "etc/update-motd.d/10-host-info.j2"
     dest: "/etc/update-motd.d/10-host-info"
@@ -22,13 +21,13 @@
     group: root
     mode: 0755
 
-- name: Create groups
+- name: SSH | Create groups
   group:
     name: "{{ item }}"
     state: present
   with_items: "{{ admin_groups }}"
 
-- name: Create users
+- name: SSH | Create users
   user:
     name: "{{ item.name }}"
     shell: "{{ item.shell }}"
@@ -39,7 +38,7 @@
   with_items:
     - "{{ admin_users }}"
 
-- name: Deploy default bashrc
+- name: SSH | Deploy default bashrc
   template:
     src: "home/bashrc.j2"
     dest: "/home/{{ item.name }}/.bashrc"
@@ -49,7 +48,7 @@
   with_items:
     - "{{ admin_users }}"
 
-- name: Deploy default root bashrc
+- name: SSH | Deploy default root bashrc
   template:
     src: "home/bashrc.j2"
     dest: "/root/.bashrc"
@@ -57,7 +56,7 @@
     group: "root"
     mode: 0600
 
-- name: Deploy the configuration file
+- name: SSH | Deploy the configuration file
   template:
     src: "etc/ssh/sshd_config.j2"
     dest: "/etc/ssh/sshd_config"
@@ -67,10 +66,10 @@
   notify:
     - Reload ssh
 
-- name: Make sure all handlers run
+- name: SSH | Make sure all handlers run
   meta: flush_handlers
 
-- name: Add users SSH keys
+- name: SSH | Add users SSH keys
   authorized_key:
     user: "{{ item.name }}"
     key: "{{ lookup('file', '{{ item.name }}/public_key/id_rsa.pub' ) }}"
@@ -79,7 +78,7 @@
   with_items:
     - "{{ admin_users }}"
 
-- name: Copy sudoers configuration file
+- name: SSH | Copy sudoers configuration file
   template:
     src: "etc/sudoers.j2"
     dest: "/etc/sudoers"
